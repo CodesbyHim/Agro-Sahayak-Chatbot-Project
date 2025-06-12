@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Agro-Sahayak Chatbot</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f9f4;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .chat-container {
+      width: 90%;
+      max-width: 600px;
+      height: 90vh;
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .chat-header {
+      background-color: #388e3c;
+      color: white;
+      padding: 16px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      text-align: center;
+    }
+    .chat-body {
+      flex: 1;
+      padding: 16px;
+      overflow-y: auto;
+    }
+    .message {
+      margin-bottom: 12px;
+      max-width: 80%;
+      padding: 10px 14px;
+      border-radius: 8px;
+      line-height: 1.4;
+    }
+    .user {
+      background-color: #e3f2fd;
+      align-self: flex-end;
+      text-align: right;
+    }
+    .bot {
+      background-color: #f1f8e9;
+      align-self: flex-start;
+    }
+    .chat-footer {
+      display: flex;
+      padding: 12px;
+      border-top: 1px solid #ddd;
+      background: #fafafa;
+    }
+    .chat-footer input {
+      flex: 1;
+      padding: 10px;
+      font-size: 1rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      margin-right: 8px;
+    }
+    .chat-footer button {
+      padding: 10px 16px;
+      font-size: 1rem;
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .chat-footer button:disabled {
+      background-color: #a5d6a7;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="chat-container">
+    <div class="chat-header">
+      👨‍🌾 Agro-Sahayak Chatbot
+    </div>
+    <div class="chat-body" id="chatBox">
+      <div class="message bot">नमस्ते! मैं आपकी कृषि में सहायता के लिए यहां हूं। कृपया पूछें।</div>
+    </div>
+    <div class="chat-footer">
+      <input type="text" id="messageText" placeholder="Type in English or Hindi..." autocomplete="off" />
+      <button id="sendBtn" onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+  <script>
+    async function sendMessage() {
+      const input = document.getElementById('messageText');
+      const message = input.value.trim();
+      if (!message) return;
+
+      // Add user message
+      const chatBox = document.getElementById('chatBox');
+      const userMsg = document.createElement('div');
+      userMsg.className = 'message user';
+      userMsg.textContent = message;
+      chatBox.appendChild(userMsg);
+      input.value = '';
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      // Add loading
+      const botMsg = document.createElement('div');
+      botMsg.className = 'message bot';
+      botMsg.textContent = 'Thinking...';
+      chatBox.appendChild(botMsg);
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      try {
+        const response = await fetch('/ask', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: new URLSearchParams({ messageText: message })
+        });
+
+        const data = await response.json();
+        botMsg.textContent = data.answer;
+      } catch (err) {
+        botMsg.textContent = 'Sorry, something went wrong!';
+      }
+    }
+
+    // Allow pressing Enter to send
+    document.getElementById('messageText').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') sendMessage();
+    });
+  </script>
+</body>
+</html>
